@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Aralaganwila Offers — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+* { font-family:'Nunito',sans-serif; }
+body { background:#f8fafc; margin:0; }
+@keyframes slideIn { from{transform:translateX(60px);opacity:0}to{transform:translateX(0);opacity:1} }
+@keyframes fadeUp  { from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1} }
+@keyframes spin    { to{transform:rotate(360deg)} }
+.page{display:none}.page.active{display:block;animation:fadeUp 0.3s ease}
+.nav-btn{transition:all 0.2s;border-radius:0.75rem;width:100%;display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.75rem;font-size:0.85rem;font-weight:700;color:#374151;background:none;border:none;cursor:pointer;text-align:left;}
+.nav-btn:hover{background:#f9fafb}.nav-btn.active{background:#f0fdf4;color:#16a34a;font-weight:900}
+.stat-card{transition:box-shadow 0.2s,transform 0.2s;background:#fff;border-radius:1.25rem;padding:1.25rem;border:1px solid #f1f5f9;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.stat-card:hover{box-shadow:0 8px 24px rgba(0,0,0,0.08);transform:translateY(-2px)}
+.toast{position:fixed;top:1.5rem;right:1.5rem;z-index:9999;padding:0.75rem 1.25rem;border-radius:1rem;color:#fff;font-weight:800;font-size:0.875rem;display:flex;align-items:center;gap:0.5rem;box-shadow:0 8px 32px rgba(0,0,0,0.15);animation:slideIn 0.3s ease}
+.badge{display:inline-flex;align-items:center;gap:0.35rem;padding:0.2rem 0.65rem;border-radius:9999px;font-size:0.7rem;font-weight:800;border-width:1px}
+.badge-approved{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
+.badge-pending{background:#fffbeb;color:#b45309;border-color:#fde68a}
+.badge-rejected{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal-box{background:#fff;border-radius:1.5rem;padding:1.5rem;width:100%;max-width:440px;box-shadow:0 24px 64px rgba(0,0,0,0.18)}
+.sidebar{width:220px;min-width:220px;background:#fff;border-right:1px solid #f1f5f9;display:flex;flex-direction:column;height:100vh;position:fixed;left:0;top:0;z-index:100}
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid #f1f5f9;padding:1rem 1.5rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:50}
+.btn-ok{background:#dcfce7;color:#15803d;border:none;padding:0.3rem 0.7rem;border-radius:0.6rem;font-weight:800;font-size:0.72rem;cursor:pointer;transition:background 0.2s}
+.btn-ok:hover{background:#bbf7d0}
+.btn-no{background:#fee2e2;color:#b91c1c;border:none;padding:0.3rem 0.7rem;border-radius:0.6rem;font-weight:800;font-size:0.72rem;cursor:pointer;transition:background 0.2s}
+.btn-no:hover{background:#fecaca}
+.btn-blue{background:#dbeafe;color:#1d4ed8;border:none;padding:0.3rem 0.5rem;border-radius:0.6rem;font-size:0.72rem;cursor:pointer;transition:background 0.2s;display:inline-flex;align-items:center;gap:0.25rem;font-weight:800}
+.btn-blue:hover{background:#bfdbfe}
+input:focus{outline:none;border-color:#4ade80!important}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:0.875rem 1.25rem;font-size:0.7rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid #f1f5f9}
+td{padding:0.875rem 1.25rem;border-bottom:1px solid #f8fafc;vertical-align:middle}
+tr:hover td{background:#f8fafc}
+.cat-Grocery{background:#dcfce7;color:#15803d}
+.cat-Pharmacy{background:#dbeafe;color:#1d4ed8}
+.cat-Hardware{background:#fef3c7;color:#b45309}
+.cat-Food{background:#fee2e2;color:#b91c1c}
+.cat-Fashion{background:#f3e8ff;color:#7e22ce}
+.filter-btn{padding:0.35rem 0.85rem;border-radius:0.65rem;font-size:0.75rem;font-weight:800;border:1.5px solid #e2e8f0;background:#fff;color:#64748b;cursor:pointer;transition:all 0.2s}
+.filter-btn.active{background:#16a34a;color:#fff;border-color:#16a34a}
+.spin{animation:spin 1s linear infinite}
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,0.85);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem}
+</style>
+</head>
+<body>
+
+<!-- ══ LOADING ══════════════════════════════════════════════ -->
+<div id="loadingScreen" class="loading-overlay">
+  <div style="width:48px;height:48px;border-radius:1rem;background:linear-gradient(135deg,#16a34a,#059669);display:flex;align-items:center;justify-content:center;">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+  </div>
+  <div style="font-weight:900;font-size:1.1rem;color:#0f172a;">Aralaganwila Offers</div>
+  <div style="font-size:0.8rem;color:#94a3b8;font-weight:700;">Connecting to database...</div>
+</div>
+
+<!-- ══ LOGIN ═════════════════════════════════════════════════ -->
+<div id="loginScreen" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:linear-gradient(135deg,#f0fdf4,#dcfce7);">
+  <div style="width:100%;max-width:360px;padding:1rem;">
+    <div style="text-align:center;margin-bottom:2rem;">
+      <div style="width:64px;height:64px;border-radius:1.25rem;background:linear-gradient(135deg,#16a34a,#059669);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;box-shadow:0 8px 24px rgba(22,163,74,0.3);">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      </div>
+      <div style="font-weight:900;font-size:1.5rem;color:#0f172a;">Aralaganwila <span style="color:#16a34a;">Offers</span></div>
+      <div style="font-size:0.875rem;color:#94a3b8;font-weight:700;margin-top:0.25rem;">Admin Dashboard</div>
+    </div>
+    <div style="background:#fff;border-radius:1.5rem;padding:1.75rem;box-shadow:0 8px 32px rgba(0,0,0,0.08);border:1px solid #f1f5f9;">
+      <div style="text-align:center;margin-bottom:1.5rem;">
+        <div style="font-weight:900;font-size:1.1rem;color:#0f172a;">Welcome Back 👋</div>
+        <div style="font-size:0.75rem;color:#94a3b8;font-weight:700;margin-top:0.25rem;">Sign in with your Google account</div>
+      </div>
+      <button id="googleBtn" onclick="doGoogleLogin()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:0.75rem;padding:0.875rem;border-radius:1rem;border:2px solid #e2e8f0;background:#fff;font-weight:900;color:#374151;font-size:0.875rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+        <span id="googleBtnTxt">Continue with Google</span>
+      </button>
+      <div id="loginError" style="display:none;margin-top:0.75rem;padding:0.75rem;border-radius:0.875rem;background:#fef2f2;border:1px solid #fecaca;font-size:0.75rem;font-weight:700;color:#b91c1c;text-align:center;"></div>
+      <div style="margin-top:1rem;padding:0.75rem;border-radius:1rem;background:#fffbeb;border:1px solid #fde68a;text-align:center;">
+        <div style="font-size:0.75rem;font-weight:800;color:#b45309;">🔒 Admin access only</div>
+        <div style="font-size:0.7rem;color:#d97706;margin-top:0.2rem;">Only authorized Google accounts</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN APP ══════════════════════════════════════════════ -->
+<div id="adminApp" style="display:none;min-height:100vh;">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div style="padding:1.25rem;border-bottom:1px solid #f1f5f9;">
+      <div style="display:flex;align-items:center;gap:0.6rem;">
+        <div style="width:32px;height:32px;border-radius:0.6rem;background:linear-gradient(135deg,#16a34a,#059669);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:900;font-size:0.85rem;color:#0f172a;">Aralaganwila</div>
+          <div style="font-size:0.65rem;font-weight:800;color:#16a34a;">Admin Panel</div>
+        </div>
+      </div>
+    </div>
+    <nav style="flex:1;padding:1rem 0.75rem;display:flex;flex-direction:column;gap:0.15rem;">
+      <button class="nav-btn active" onclick="showPage('dashboard',this)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-btn" onclick="showPage('shops',this)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Shops
+        <span id="shopBadge" style="display:none;margin-left:auto;min-width:20px;height:20px;border-radius:9999px;background:#fbbf24;color:#fff;font-size:0.65rem;font-weight:900;align-items:center;justify-content:center;padding:0 4px;">0</span>
+      </button>
+      <button class="nav-btn" onclick="showPage('offers',this)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        Offers
+        <span id="offerBadge" style="display:none;margin-left:auto;min-width:20px;height:20px;border-radius:9999px;background:#fbbf24;color:#fff;font-size:0.65rem;font-weight:900;align-items:center;justify-content:center;padding:0 4px;">0</span>
+      </button>
+      <button class="nav-btn" onclick="showPage('users',this)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Users
+      </button>
+    </nav>
+    <div style="padding:1rem;border-top:1px solid #f1f5f9;">
+      <div style="display:flex;align-items:center;gap:0.65rem;margin-bottom:0.75rem;">
+        <img id="adminAvatar" src="" style="width:34px;height:34px;border-radius:9999px;object-fit:cover;display:none;"/>
+        <div id="adminInitials" style="width:34px;height:34px;border-radius:9999px;background:#16a34a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.75rem;font-weight:900;flex-shrink:0;">A</div>
+        <div style="flex:1;min-width:0;">
+          <div id="adminName" style="font-weight:900;font-size:0.75rem;color:#0f172a;">Admin</div>
+          <div id="adminEmail" style="font-size:0.65rem;color:#94a3b8;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">admin</div>
+        </div>
+      </div>
+      <button onclick="doLogout()" style="width:100%;display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;border-radius:0.75rem;background:none;border:none;color:#ef4444;font-size:0.75rem;font-weight:800;cursor:pointer;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div style="flex:1;">
+        <div style="position:relative;max-width:320px;">
+          <svg style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="topSearch" oninput="handleSearch()" type="text" placeholder="Search shops, offers..." style="width:100%;padding:0.55rem 1rem 0.55rem 2.25rem;border-radius:0.75rem;background:#f8fafc;border:1.5px solid #e2e8f0;font-size:0.85rem;font-weight:600;color:#374151;"/>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        <div style="width:8px;height:8px;border-radius:9999px;background:#22c55e;" id="dbStatus" title="Connected to Firebase"></div>
+        <span style="font-size:0.7rem;font-weight:700;color:#16a34a;" id="dbStatusTxt">Live</span>
+      </div>
+    </div>
+
+    <div style="padding:1.5rem;overflow-y:auto;">
+
+      <!-- DASHBOARD -->
+      <div id="page-dashboard" class="page active">
+        <div style="margin-bottom:1.5rem;">
+          <div style="font-weight:900;font-size:1.5rem;color:#0f172a;">Dashboard 👋</div>
+          <div style="font-size:0.875rem;color:#94a3b8;font-weight:600;margin-top:0.2rem;">Real-time data from Firebase</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
+          <div class="stat-card">
+            <div style="display:flex;align-items:start;justify-content:space-between;">
+              <div><div style="font-size:0.68rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">Total Shops</div>
+              <div style="font-size:2rem;font-weight:900;color:#0f172a;" id="s-total">0</div>
+              <div style="font-size:0.72rem;color:#64748b;font-weight:700;" id="s-active">0 active</div></div>
+              <div style="width:44px;height:44px;border-radius:0.875rem;background:#dcfce7;display:flex;align-items:center;justify-content:center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div style="display:flex;align-items:start;justify-content:space-between;">
+              <div><div style="font-size:0.68rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">Pending</div>
+              <div style="font-size:2rem;font-weight:900;color:#0f172a;" id="s-pending">0</div>
+              <div style="font-size:0.72rem;color:#f59e0b;font-weight:700;">⚡ Needs action</div></div>
+              <div style="width:44px;height:44px;border-radius:0.875rem;background:#fffbeb;display:flex;align-items:center;justify-content:center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div style="display:flex;align-items:start;justify-content:space-between;">
+              <div><div style="font-size:0.68rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">Active Offers</div>
+              <div style="font-size:2rem;font-weight:900;color:#0f172a;" id="s-offers">0</div>
+              <div style="font-size:0.72rem;color:#2563eb;font-weight:700;">Live now</div></div>
+              <div style="width:44px;height:44px;border-radius:0.875rem;background:#dbeafe;display:flex;align-items:center;justify-content:center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div style="display:flex;align-items:start;justify-content:space-between;">
+              <div><div style="font-size:0.68rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">Users</div>
+              <div style="font-size:2rem;font-weight:900;color:#0f172a;" id="s-users">0</div>
+              <div style="font-size:0.72rem;color:#9333ea;font-weight:700;">Registered</div></div>
+              <div style="width:44px;height:44px;border-radius:0.875rem;background:#f3e8ff;display:flex;align-items:center;justify-content:center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+          <div style="background:#fff;border-radius:1.25rem;border:1px solid #f1f5f9;padding:1.25rem;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+              <div style="font-weight:900;color:#0f172a;">Pending Shops</div>
+              <button onclick="showPage('shops',null)" style="font-size:0.72rem;font-weight:800;color:#16a34a;background:none;border:none;cursor:pointer;">View all →</button>
+            </div>
+            <div id="dashPendingShops"></div>
+          </div>
+          <div style="background:#fff;border-radius:1.25rem;border:1px solid #f1f5f9;padding:1.25rem;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+              <div style="font-weight:900;color:#0f172a;">Pending Offers</div>
+              <button onclick="showPage('offers',null)" style="font-size:0.72rem;font-weight:800;color:#16a34a;background:none;border:none;cursor:pointer;">View all →</button>
+            </div>
+            <div id="dashPendingOffers"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHOPS -->
+      <div id="page-shops" class="page">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+          <div>
+            <div style="font-weight:900;font-size:1.5rem;color:#0f172a;">Shops</div>
+            <div style="font-size:0.875rem;color:#94a3b8;font-weight:600;" id="shopCountTxt">Loading...</div>
+          </div>
+          <div style="display:flex;gap:0.5rem;" id="shopFilters">
+            <button class="filter-btn active" onclick="setFilter('shop','all',this)">All</button>
+            <button class="filter-btn" onclick="setFilter('shop','approved',this)">Approved</button>
+            <button class="filter-btn" onclick="setFilter('shop','pending',this)">Pending</button>
+            <button class="filter-btn" onclick="setFilter('shop','rejected',this)">Rejected</button>
+          </div>
+        </div>
+        <div style="background:#fff;border-radius:1.25rem;border:1px solid #f1f5f9;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+          <table><thead><tr>
+            <th>Shop</th><th>Owner</th><th>Location</th><th>Status</th><th>Offers</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="shopsBody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- OFFERS -->
+      <div id="page-offers" class="page">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+          <div>
+            <div style="font-weight:900;font-size:1.5rem;color:#0f172a;">Offers</div>
+            <div style="font-size:0.875rem;color:#94a3b8;font-weight:600;" id="offerCountTxt">Loading...</div>
+          </div>
+          <div style="display:flex;gap:0.5rem;">
+            <button class="filter-btn active" onclick="setFilter('offer','all',this)">All</button>
+            <button class="filter-btn" onclick="setFilter('offer','approved',this)">Approved</button>
+            <button class="filter-btn" onclick="setFilter('offer','pending',this)">Pending</button>
+            <button class="filter-btn" onclick="setFilter('offer','rejected',this)">Rejected</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;" id="offersGrid"></div>
+      </div>
+
+      <!-- USERS -->
+      <div id="page-users" class="page">
+        <div style="margin-bottom:1.25rem;">
+          <div style="font-weight:900;font-size:1.5rem;color:#0f172a;">Users</div>
+          <div style="font-size:0.875rem;color:#94a3b8;font-weight:600;" id="userCountTxt">Loading...</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;" id="usersGrid"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- LOCATION MODAL -->
+<div id="locModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;">
+      <div style="width:40px;height:40px;border-radius:0.875rem;background:#dcfce7;display:flex;align-items:center;justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <div>
+        <div style="font-weight:900;color:#0f172a;" id="locModalName">Shop</div>
+        <div style="font-size:0.72rem;color:#94a3b8;font-weight:700;">Set Location</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.25rem;">
+      <div><label style="font-size:0.72rem;font-weight:800;color:#64748b;display:block;margin-bottom:0.35rem;">Address</label>
+        <input id="locAddr" type="text" placeholder="e.g. Temple Road, Aralaganwila" style="width:100%;padding:0.6rem 0.875rem;border:1.5px solid #e2e8f0;border-radius:0.875rem;font-size:0.875rem;font-weight:600;box-sizing:border-box;"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+        <div><label style="font-size:0.72rem;font-weight:800;color:#64748b;display:block;margin-bottom:0.35rem;">Latitude</label>
+          <input id="locLat" type="text" placeholder="7.9553" style="width:100%;padding:0.6rem 0.875rem;border:1.5px solid #e2e8f0;border-radius:0.875rem;font-size:0.875rem;font-weight:600;box-sizing:border-box;"/></div>
+        <div><label style="font-size:0.72rem;font-weight:800;color:#64748b;display:block;margin-bottom:0.35rem;">Longitude</label>
+          <input id="locLng" type="text" placeholder="80.8958" style="width:100%;padding:0.6rem 0.875rem;border:1.5px solid #e2e8f0;border-radius:0.875rem;font-size:0.875rem;font-weight:600;box-sizing:border-box;"/></div>
+      </div>
+    </div>
+    <button id="autoDetectBtn" onclick="autoDetect()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.75rem;border-radius:1rem;border:2px dashed #86efac;background:#f0fdf4;color:#16a34a;font-weight:900;font-size:0.875rem;cursor:pointer;margin-bottom:1rem;">
+      <svg id="detectIco" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+      <span id="detectTxt">Auto-Detect Location</span>
+    </button>
+    <div style="display:flex;gap:0.75rem;">
+      <button onclick="closeLocModal()" style="flex:1;padding:0.7rem;border-radius:1rem;border:1.5px solid #e2e8f0;background:#fff;color:#64748b;font-weight:800;font-size:0.875rem;cursor:pointer;">Cancel</button>
+      <button onclick="saveLocation()" style="flex:1;padding:0.7rem;border-radius:1rem;background:#16a34a;color:#fff;font-weight:900;font-size:0.875rem;cursor:pointer;border:none;">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FIREBASE SDK ══════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, doc, updateDoc, query, orderBy }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+// ── CONFIG ────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyAXeKNB777fNBK2zHqY6hGrvEfc0DH4VJs",
+  authDomain: "aralaganwila-offers.firebaseapp.com",
+  projectId: "aralaganwila-offers",
+  storageBucket: "aralaganwila-offers.firebasestorage.app",
+  messagingSenderId: "465514956115",
+  appId: "1:465514956115:web:53ce2f4ebfd4f7d1fc8da6"
+};
+
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+// ── STATE ─────────────────────────────────────────────────────
+let shops = [], offers = [], users = [];
+let shopFilter = 'all', offerFilter = 'all', searchQ = '';
+let currentLocShopId = null;
+
+// ── HELPERS ───────────────────────────────────────────────────
+const CAT_COLORS = {Grocery:'#16a34a',Pharmacy:'#2563eb',Hardware:'#d97706',Food:'#dc2626',Fashion:'#9333ea'};
+const $ = id => document.getElementById(id);
+
+function showToast(msg, type='success') {
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.style.background = type==='success'?'#16a34a':type==='error'?'#dc2626':'#f59e0b';
+  t.innerHTML = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 3000);
+}
+
+function badge(status) {
+  const c={approved:'badge-approved',pending:'badge-pending',rejected:'badge-rejected'};
+  const d={approved:'#22c55e',pending:'#fbbf24',rejected:'#ef4444'};
+  const l={approved:'Approved',pending:'Pending',rejected:'Rejected'};
+  return `<span class="badge ${c[status]}"><span style="width:6px;height:6px;border-radius:9999px;background:${d[status]};display:inline-block;"></span>${l[status]}</span>`;
+}
+
+// ── AUTH ──────────────────────────────────────────────────────
+window.doGoogleLogin = async () => {
+  const btn = $('googleBtn'); const txt = $('googleBtnTxt');
+  btn.disabled = true; txt.textContent = 'Signing in...';
+  try {
+    await signInWithPopup(auth, provider);
+  } catch(e) {
+    btn.disabled = false; txt.textContent = 'Continue with Google';
+    $('loginError').style.display = 'block';
+    $('loginError').textContent = 'Login failed: ' + e.message;
+  }
+};
+
+window.doLogout = async () => {
+  await signOut(auth);
+};
+
+// ── LOADING TIMEOUT FALLBACK ──────────────────────────────────
+// If Firebase doesn't respond in 6s (e.g. unauthorized domain, no internet),
+// hide loading and show login so the user isn't stuck forever.
+let authResolved = false;
+setTimeout(() => {
+  if (!authResolved) {
+    $('loadingScreen').style.display = 'none';
+    $('loginScreen').style.display = 'flex';
+    const err = $('loginError');
+    if (err) {
+      err.style.display = 'block';
+      err.textContent = '⚠️ Could not connect to database. Make sure you are running this on a server (not file://) and your domain is added to Firebase Authorized Domains.';
+    }
+  }
+}, 6000);
+
+onAuthStateChanged(auth, user => {
+  authResolved = true;
+  $('loadingScreen').style.display = 'none';
+  if (user) {
+    // Show admin app
+    $('loginScreen').style.display = 'none';
+    $('adminApp').style.display = 'flex';
+    // Set user info
+    $('adminName').textContent = user.displayName || 'Admin';
+    $('adminEmail').textContent = user.email || '';
+    if (user.photoURL) {
+      $('adminAvatar').src = user.photoURL;
+      $('adminAvatar').style.display = 'block';
+      $('adminInitials').style.display = 'none';
+    } else {
+      const initials = (user.displayName||'A').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+      $('adminInitials').textContent = initials;
+    }
+    // Start live listeners
+    startListeners();
+  } else {
+    $('loginScreen').style.display = 'flex';
+    $('adminApp').style.display = 'none';
+  }
+});
+
+// ── REAL-TIME LISTENERS ───────────────────────────────────────
+function startListeners() {
+  // Shops
+  onSnapshot(collection(db, 'shops'), snap => {
+    shops = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    renderAll();
+  });
+  // Offers
+  onSnapshot(collection(db, 'offers'), snap => {
+    offers = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    renderAll();
+  });
+  // Users
+  onSnapshot(collection(db, 'users'), snap => {
+    users = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    renderAll();
+  });
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────
+window.updateShop = async (id, status) => {
+  try {
+    await updateDoc(doc(db,'shops',id), {status, updatedAt: new Date().toISOString()});
+    showToast(status==='approved'?'✅ Shop Approved!':'❌ Shop Rejected', status==='approved'?'success':'error');
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+};
+
+window.updateOffer = async (id, status) => {
+  try {
+    await updateDoc(doc(db,'offers',id), {status, updatedAt: new Date().toISOString()});
+    showToast(status==='approved'?'✅ Offer Approved!':'❌ Offer Rejected', status==='approved'?'success':'error');
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+};
+
+window.openLocModal = (id) => {
+  currentLocShopId = id;
+  const s = shops.find(x=>x.id===id);
+  if(!s) return;
+  $('locModalName').textContent = s.name;
+  $('locAddr').value = s.location||'';
+  $('locLat').value = s.lat||'';
+  $('locLng').value = s.lng||'';
+  $('locModal').style.display = 'flex';
+};
+window.closeLocModal = () => { $('locModal').style.display='none'; currentLocShopId=null; };
+
+window.autoDetect = () => {
+  const btn=$('autoDetectBtn'), txt=$('detectTxt'), ico=$('detectIco');
+  btn.disabled=true; txt.textContent='Detecting...'; ico.classList.add('spin');
+  const done=(lat,lng)=>{
+    $('locLat').value=lat; $('locLng').value=lng;
+    btn.disabled=false; txt.textContent='Auto-Detect Location'; ico.classList.remove('spin');
+    showToast('📍 Location detected!');
+  };
+  if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=>done(p.coords.latitude.toFixed(6),p.coords.longitude.toFixed(6)),()=>done('7.955300','80.895800'));
+  else setTimeout(()=>done('7.955300','80.895800'),1200);
+};
+
+window.saveLocation = async () => {
+  if(!currentLocShopId) return;
+  try {
+    await updateDoc(doc(db,'shops',currentLocShopId), {
+      location: $('locAddr').value,
+      lat: parseFloat($('locLat').value)||0,
+      lng: parseFloat($('locLng').value)||0,
+      updatedAt: new Date().toISOString()
+    });
+    closeLocModal();
+    showToast('📍 Location saved!');
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+};
+
+// ── NAVIGATION ────────────────────────────────────────────────
+window.showPage = (id, btn) => {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  $('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  else document.querySelectorAll('.nav-btn').forEach(b=>{
+    if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+id+"'")) b.classList.add('active');
+  });
+  $('topSearch').value=''; searchQ='';
+  shopFilter='all'; offerFilter='all';
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.filter-btn:first-child').forEach(b=>b.classList.add('active'));
+  renderAll();
+};
+
+window.handleSearch = () => { searchQ=$('topSearch').value.toLowerCase(); renderAll(); };
+window.setFilter = (type, val, btn) => {
+  if(type==='shop') shopFilter=val; else offerFilter=val;
+  btn.closest('div').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+};
+window.openLocModal = window.openLocModal;
+
+// ── RENDER ────────────────────────────────────────────────────
+function renderAll() {
+  const pendingS = shops.filter(s=>s.status==='pending').length;
+  const pendingO = offers.filter(o=>o.status==='pending').length;
+  const total = pendingS+pendingO;
+
+  // Stats
+  $('s-total').textContent = shops.length;
+  $('s-active').textContent = shops.filter(s=>s.status==='approved').length+' active';
+  $('s-pending').textContent = total;
+  $('s-offers').textContent = offers.filter(o=>o.status==='approved').length;
+  $('s-users').textContent = users.length;
+
+  // Badges
+  const sb=$('shopBadge'), ob=$('offerBadge');
+  sb.textContent=pendingS; sb.style.display=pendingS>0?'inline-flex':'none';
+  ob.textContent=pendingO; ob.style.display=pendingO>0?'inline-flex':'none';
+
+  // Dashboard pending
+  const ps=shops.filter(s=>s.status==='pending');
+  $('dashPendingShops').innerHTML = ps.length ? ps.map(s=>`
+    <div style="display:flex;align-items:center;gap:0.6rem;padding:0.65rem;border-radius:0.875rem;background:#fffbeb;border:1px solid #fde68a;margin-bottom:0.5rem;">
+      <div style="width:32px;height:32px;border-radius:0.6rem;background:${CAT_COLORS[s.category]||'#16a34a'};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:0.8rem;flex-shrink:0;">${(s.name||'?')[0]}</div>
+      <div style="flex:1;min-width:0;"><div style="font-weight:900;font-size:0.8rem;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.name||''}</div>
+      <div style="font-size:0.68rem;color:#64748b;font-weight:700;">${s.ownerName||s.owner||''} · ${s.category||''}</div></div>
+      <div style="display:flex;gap:0.3rem;">
+        <button class="btn-ok" onclick="updateShop('${s.id}','approved')" style="width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;">✓</button>
+        <button class="btn-no" onclick="updateShop('${s.id}','rejected')" style="width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+    </div>`).join('')
+    : '<div style="text-align:center;padding:1.25rem;color:#94a3b8;font-weight:800;font-size:0.85rem;">✅ All clear!</div>';
+
+  const po=offers.filter(o=>o.status==='pending');
+  $('dashPendingOffers').innerHTML = po.length ? po.map(o=>`
+    <div style="display:flex;align-items:center;gap:0.6rem;padding:0.65rem;border-radius:0.875rem;background:#fffbeb;border:1px solid #fde68a;margin-bottom:0.5rem;">
+      ${o.image?`<img src="${o.image}" style="width:32px;height:32px;border-radius:0.6rem;object-fit:cover;flex-shrink:0;" onerror="this.style.background='#f1f5f9'">`:`<div style="width:32px;height:32px;border-radius:0.6rem;background:#f1f5f9;flex-shrink:0;"></div>`}
+      <div style="flex:1;min-width:0;"><div style="font-weight:900;font-size:0.8rem;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${o.product||o.productName||''}</div>
+      <div style="font-size:0.68rem;color:#16a34a;font-weight:800;">Rs.${o.discountPrice||o.discount||0}</div></div>
+      <div style="display:flex;gap:0.3rem;">
+        <button class="btn-ok" onclick="updateOffer('${o.id}','approved')" style="width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;">✓</button>
+        <button class="btn-no" onclick="updateOffer('${o.id}','rejected')" style="width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+    </div>`).join('')
+    : '<div style="text-align:center;padding:1.25rem;color:#94a3b8;font-weight:800;font-size:0.85rem;">✅ All clear!</div>';
+
+  // Shops table
+  const fShops = shops.filter(s=>{
+    const mq=!searchQ||s.name?.toLowerCase().includes(searchQ)||(s.ownerName||s.owner||'').toLowerCase().includes(searchQ);
+    return mq&&(shopFilter==='all'||s.status===shopFilter);
+  });
+  if($('shopCountTxt')) $('shopCountTxt').textContent = fShops.length+' shops';
+  if($('shopsBody')) $('shopsBody').innerHTML = fShops.length ? fShops.map(s=>{
+    const col=CAT_COLORS[s.category]||'#16a34a';
+    let acts='';
+    if(s.status==='pending') acts=`<button class="btn-ok" onclick="updateShop('${s.id}','approved')">✓ Approve</button> <button class="btn-no" onclick="updateShop('${s.id}','rejected')">✕ Reject</button>`;
+    else if(s.status==='approved') acts=`<button class="btn-no" onclick="updateShop('${s.id}','rejected')">Suspend</button>`;
+    else acts=`<button class="btn-ok" onclick="updateShop('${s.id}','approved')">Restore</button>`;
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:0.65rem;">
+        <div style="width:36px;height:36px;border-radius:0.65rem;background:${col};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:0.875rem;flex-shrink:0;">${(s.name||'?')[0]}</div>
+        <div><div style="font-weight:900;font-size:0.875rem;">${s.name||''}</div>
+        <span style="font-size:0.65rem;font-weight:800;padding:0.1rem 0.4rem;border-radius:9999px;" class="cat-${s.category||''}">${s.category||''}</span></div>
+      </div></td>
+      <td><div style="font-weight:800;font-size:0.875rem;">${s.ownerName||s.owner||''}</div><div style="font-size:0.7rem;color:#94a3b8;">${s.phone||s.ownerPhone||''}</div></td>
+      <td><button class="btn-blue" onclick="openLocModal('${s.id}')">📍 ${s.location||'Set location'}</button></td>
+      <td>${badge(s.status||'pending')}</td>
+      <td><strong>${s.offerCount||0}</strong></td>
+      <td><div style="display:flex;gap:0.35rem;flex-wrap:wrap;">${acts}
+        <button class="btn-blue" onclick="openLocModal('${s.id}')">📍</button>
+      </div></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="6" style="text-align:center;padding:2rem;color:#94a3b8;font-weight:800;">No shops found</td></tr>';
+
+  // Offers grid
+  const fOffers = offers.filter(o=>{
+    const mq=!searchQ||(o.product||o.productName||'').toLowerCase().includes(searchQ)||(o.shopName||o.shop||'').toLowerCase().includes(searchQ);
+    return mq&&(offerFilter==='all'||o.status===offerFilter);
+  });
+  if($('offerCountTxt')) $('offerCountTxt').textContent = fOffers.length+' offers';
+  if($('offersGrid')) $('offersGrid').innerHTML = fOffers.length ? fOffers.map(o=>{
+    const name=o.product||o.productName||'';
+    const shop=o.shopName||o.shop||'';
+    const orig=o.originalPrice||o.original||0;
+    const disc=o.discountPrice||o.discount||0;
+    const pct=orig?Math.round(((orig-disc)/orig)*100):0;
+    let acts='';
+    if(o.status==='pending') acts=`<div style="display:flex;gap:0.5rem;margin-top:0.65rem;">
+      <button class="btn-ok" style="flex:1;padding:0.4rem;display:flex;align-items:center;justify-content:center;gap:0.25rem;" onclick="updateOffer('${o.id}','approved')">✓ Approve</button>
+      <button class="btn-no" style="flex:1;padding:0.4rem;display:flex;align-items:center;justify-content:center;gap:0.25rem;" onclick="updateOffer('${o.id}','rejected')">✕ Reject</button>
+    </div>`;
+    else if(o.status==='approved') acts=`<button onclick="updateOffer('${o.id}','rejected')" style="font-size:0.72rem;font-weight:800;color:#ef4444;background:none;border:none;cursor:pointer;margin-top:0.4rem;padding:0;">Remove</button>`;
+    else acts=`<button onclick="updateOffer('${o.id}','approved')" style="font-size:0.72rem;font-weight:800;color:#16a34a;background:none;border:none;cursor:pointer;margin-top:0.4rem;padding:0;">Restore</button>`;
+    return `<div style="background:#fff;border-radius:1.25rem;border:1px solid #f1f5f9;padding:1rem;display:flex;gap:0.875rem;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+      ${o.image?`<img src="${o.image}" style="width:64px;height:64px;border-radius:0.875rem;object-fit:cover;flex-shrink:0;">`:`<div style="width:64px;height:64px;border-radius:0.875rem;background:#f1f5f9;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🏷️</div>`}
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:start;justify-content:space-between;gap:0.5rem;">
+          <div style="font-weight:900;font-size:0.875rem;color:#0f172a;line-height:1.3;">${name}</div>
+          ${badge(o.status||'pending')}
+        </div>
+        <div style="font-size:0.72rem;font-weight:700;color:#64748b;margin-top:0.25rem;">${shop}</div>
+        <div style="display:flex;align-items:center;gap:0.65rem;margin-top:0.4rem;">
+          <span style="font-size:0.72rem;color:#94a3b8;text-decoration:line-through;">Rs.${orig}</span>
+          <span style="font-size:0.95rem;font-weight:900;color:#16a34a;">Rs.${disc}</span>
+          ${pct?`<span style="font-size:0.65rem;font-weight:900;background:#fee2e2;color:#b91c1c;padding:0.15rem 0.4rem;border-radius:9999px;">-${pct}%</span>`:''}
+        </div>
+        ${acts}
+      </div>
+    </div>`;
+  }).join('') : '<div style="text-align:center;padding:3rem;color:#94a3b8;font-weight:800;grid-column:1/-1;">No offers found</div>';
+
+  // Users grid
+  if($('userCountTxt')) $('userCountTxt').textContent = users.length+' users';
+  if($('usersGrid')) $('usersGrid').innerHTML = users.length ? users.map(u=>{
+    const name=u.displayName||u.name||'User';
+    const initials=name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    const colors=['#dcfce7','#dbeafe','#f3e8ff','#fef3c7','#fee2e2'];
+    const tcols=['#16a34a','#2563eb','#9333ea','#b45309','#b91c1c'];
+    const ci=users.indexOf(u)%5;
+    return `<div style="background:#fff;border-radius:1.25rem;border:1px solid #f1f5f9;padding:1.25rem;display:flex;align-items:center;gap:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+      <div style="width:44px;height:44px;border-radius:0.875rem;background:${colors[ci]};display:flex;align-items:center;justify-content:center;font-weight:900;color:${tcols[ci]};font-size:0.875rem;flex-shrink:0;">${initials}</div>
+      <div><div style="font-weight:900;color:#0f172a;">${name}</div>
+      <div style="font-size:0.72rem;color:#94a3b8;font-weight:700;">${u.email||u.phone||''}</div>
+      <div style="font-size:0.7rem;margin-top:0.35rem;"><span style="background:#dcfce7;color:#15803d;padding:0.2rem 0.65rem;border-radius:9999px;font-weight:800;">active</span></div></div>
+    </div>`;
+  }).join('') : '<div style="background:#fff;border-radius:1.25rem;border:1px solid #f1f5f9;padding:3rem;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.04);grid-column:1/-1;"><div style="font-size:2.5rem;margin-bottom:0.75rem;">👥</div><div style="font-weight:900;color:#94a3b8;">No users yet</div></div>';
+}
+
+// expose for non-module buttons
+window.renderAll = renderAll;
+</script>
+</body>
+</html>

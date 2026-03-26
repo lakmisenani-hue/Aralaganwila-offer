@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>My Shop — Aralaganwila Offers</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{font-family:'Nunito',sans-serif;box-sizing:border-box;}
+body{background:#f0fdf4;margin:0;max-width:480px;margin:0 auto;min-height:100vh;}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin 1s linear infinite}
+.card{background:#fff;border-radius:1.25rem;border:1px solid #e2e8f0;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+.page{display:none}.page.active{display:block;animation:slideUp 0.3s ease}
+.tab-btn{flex:1;padding:0.65rem;border:none;background:none;cursor:pointer;font-weight:800;font-size:0.8rem;color:rgba(255,255,255,0.65);border-radius:0.75rem;transition:all 0.2s;}
+.tab-btn.active{background:rgba(255,255,255,0.25);color:#fff;}
+.field{display:flex;flex-direction:column;gap:0.35rem;margin-bottom:0.875rem;}
+.field label{font-size:0.78rem;font-weight:800;color:#64748b;}
+.field input,.field select,.field textarea{padding:0.7rem 0.875rem;border:1.5px solid #e2e8f0;border-radius:0.875rem;font-size:0.875rem;font-weight:600;color:#374151;outline:none;transition:border 0.2s;font-family:inherit;width:100%;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#4ade80;}
+.btn-green{width:100%;padding:0.875rem;border-radius:1rem;background:linear-gradient(135deg,#16a34a,#059669);color:#fff;font-weight:900;font-size:0.95rem;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(22,163,74,0.3);}
+.btn-green:disabled{opacity:0.6;cursor:not-allowed;}
+.badge{display:inline-flex;align-items:center;gap:0.3rem;padding:0.22rem 0.65rem;border-radius:9999px;font-size:0.7rem;font-weight:800;border-width:1px;border-style:solid;}
+.badge-approved{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
+.badge-pending{background:#fffbeb;color:#b45309;border-color:#fde68a}
+.badge-rejected{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:9999;padding:0.75rem 1.5rem;border-radius:1rem;color:#fff;font-weight:800;font-size:0.875rem;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,0.15);}
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loadingScreen" style="position:fixed;inset:0;background:#fff;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
+  <div style="width:52px;height:52px;border-radius:1rem;background:linear-gradient(135deg,#16a34a,#059669);display:flex;align-items:center;justify-content:center;">
+    <svg width="24" height="24" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  </div>
+  <div style="font-weight:900;color:#0f172a;">Loading your shop...</div>
+  <svg class="spin" width="22" height="22" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+</div>
+
+<!-- LOGIN / REGISTER SCREEN -->
+<div id="loginScreen" style="display:none;min-height:100vh;background:linear-gradient(160deg,#f0fdf4,#dcfce7);padding:2rem 1.25rem;">
+  <div style="text-align:center;padding-top:3rem;margin-bottom:2.5rem;">
+    <div style="width:68px;height:68px;border-radius:1.5rem;background:linear-gradient(135deg,#16a34a,#059669);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;box-shadow:0 8px 24px rgba(22,163,74,0.35);">
+      <svg width="30" height="30" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div>
+    <div style="font-weight:900;font-size:1.6rem;color:#0f172a;">Shop Owner Portal</div>
+    <div style="font-size:0.875rem;color:#64748b;font-weight:700;margin-top:0.35rem;">Aralaganwila Offers</div>
+  </div>
+
+  <div class="card" style="padding:1.75rem;">
+    <div id="loginNote" style="margin-bottom:1rem;padding:0.875rem;border-radius:1rem;background:#fffbeb;border:1px solid #fde68a;font-size:0.8rem;font-weight:800;color:#b45309;text-align:center;">
+      ⚠️ Sign in with Google first to continue
+    </div>
+
+    <button id="googleSignInBtn" onclick="doGoogleLogin()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:0.75rem;padding:0.875rem;border-radius:1rem;border:2px solid #e2e8f0;background:#fff;font-weight:900;color:#374151;font-size:0.9rem;cursor:pointer;margin-bottom:1.25rem;">
+      <svg width="20" height="20" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      <span id="googleBtnTxt">Sign in with Google</span>
+    </button>
+
+    <div id="registerSection" style="display:none;border-top:1px solid #f1f5f9;padding-top:1.25rem;">
+      <div style="font-weight:900;font-size:1.1rem;color:#0f172a;margin-bottom:1rem;text-align:center;">📋 Register Your Shop</div>
+      <div class="field"><label>Shop Name *</label><input id="regName" type="text" placeholder="e.g. Singhe Stores"/></div>
+      <div class="field"><label>Owner Name *</label><input id="regOwner" type="text" placeholder="Your full name"/></div>
+      <div class="field"><label>Phone *</label><input id="regPhone" type="tel" placeholder="077-XXXXXXX"/></div>
+      <div class="field"><label>Category *</label>
+        <select id="regCat">
+          <option value="">Select category</option>
+          <option>Grocery</option><option>Pharmacy</option><option>Hardware</option><option>Food</option><option>Fashion</option>
+        </select>
+      </div>
+      <div class="field"><label>Location *</label><input id="regLocation" type="text" placeholder="e.g. Town Center, Aralaganwila"/></div>
+      <button onclick="registerShop()" id="regBtn" class="btn-green">Submit Registration 🏪</button>
+      <div id="regMsg" style="display:none;margin-top:0.75rem;padding:0.75rem;border-radius:0.875rem;font-size:0.8rem;font-weight:700;text-align:center;"></div>
+    </div>
+  </div>
+
+  <div id="cancelRegBtn" style="display:none;text-align:center;margin-top:1.5rem;">
+    <button onclick="doLogout()" style="background:none;border:none;color:#ef4444;font-weight:800;font-size:0.9rem;cursor:pointer;">Cancel & Sign Out</button>
+  </div>
+</div>
+
+<!-- MAIN SHOP APP -->
+<div id="shopApp" style="display:none;">
+  <!-- Header + Tabs -->
+  <div style="background:linear-gradient(135deg,#16a34a,#059669);padding:1.25rem 1.25rem 0.5rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+      <div>
+        <div style="font-weight:900;font-size:1.1rem;color:#fff;" id="shopNameHeader">My Shop</div>
+        <div style="font-size:0.72rem;color:rgba(255,255,255,0.75);font-weight:700;" id="shopSubHeader">Loading...</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        <div id="ownerAvatar" style="width:36px;height:36px;border-radius:9999px;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:0.8rem;">?</div>
+        <button onclick="doLogout()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:0.75rem;font-weight:800;padding:0.4rem 0.75rem;border-radius:0.75rem;cursor:pointer;">Sign Out</button>
+      </div>
+    </div>
+    <div style="display:flex;background:rgba(0,0,0,0.15);border-radius:1rem;padding:0.3rem;gap:0.2rem;">
+      <button class="tab-btn active" onclick="switchTab('home',this)">🏠 Home</button>
+      <button class="tab-btn" onclick="switchTab('add',this)">➕ Add Offer</button>
+      <button class="tab-btn" onclick="switchTab('offers',this)">📋 My Offers</button>
+      <button class="tab-btn" onclick="switchTab('profile',this)">⚙️ Profile</button>
+    </div>
+  </div>
+
+  <div style="padding:1rem;">
+
+    <!-- HOME TAB -->
+    <div id="tab-home" class="page active">
+      <div id="shopStatusBanner" style="margin-bottom:1rem;padding:1rem;border-radius:1.25rem;text-align:center;display:none;"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.25rem;">
+        <div class="card" style="padding:1rem;text-align:center;">
+          <div style="font-size:1.6rem;font-weight:900;color:#16a34a;" id="statOffers">0</div>
+          <div style="font-size:0.72rem;font-weight:800;color:#64748b;">Total Offers</div>
+        </div>
+        <div class="card" style="padding:1rem;text-align:center;">
+          <div style="font-size:1.6rem;font-weight:900;color:#059669;" id="statActive">0</div>
+          <div style="font-size:0.72rem;font-weight:800;color:#64748b;">Active Offers</div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:1rem;">
+        <div style="font-weight:900;color:#0f172a;margin-bottom:0.75rem;">📊 Shop Info</div>
+        <div id="shopInfoContent" style="font-size:0.82rem;color:#64748b;font-weight:700;">Loading...</div>
+      </div>
+    </div>
+
+    <!-- ADD OFFER TAB -->
+    <div id="tab-add" class="page">
+      <div class="card" style="padding:1.25rem;">
+        <div style="font-weight:900;font-size:1.05rem;color:#0f172a;margin-bottom:1.25rem;">➕ New Offer</div>
+        <div class="field"><label>Offer Title *</label><input id="ofTitle" type="text" placeholder="e.g. Fresh Vegetables 20% Off"/></div>
+        <div class="field"><label>Description</label><textarea id="ofDesc" rows="3" placeholder="Describe your offer..."></textarea></div>
+        <div class="field"><label>Original Price (Rs.)</label><input id="ofOrigPrice" type="number" placeholder="500"/></div>
+        <div class="field"><label>Offer Price (Rs.) *</label><input id="ofPrice" type="number" placeholder="399"/></div>
+        <div class="field"><label>Discount %</label><input id="ofDiscount" type="number" placeholder="Auto calculated" readonly style="background:#f8fafc;"/></div>
+        <div class="field"><label>Expires On</label><input id="ofExpiry" type="date"/></div>
+        <div class="field"><label>Category *</label>
+          <select id="ofCat">
+            <option value="">Select category</option>
+            <option>Grocery</option><option>Pharmacy</option><option>Hardware</option><option>Food</option><option>Fashion</option>
+          </select>
+        </div>
+        <button onclick="addOffer()" id="addOfferBtn" class="btn-green">Post Offer 🎉</button>
+        <div id="addOfferMsg" style="display:none;margin-top:0.75rem;padding:0.75rem;border-radius:0.875rem;font-size:0.8rem;font-weight:700;text-align:center;"></div>
+      </div>
+    </div>
+
+    <!-- MY OFFERS TAB -->
+    <div id="tab-offers" class="page">
+      <div id="myOffersList">
+        <div style="text-align:center;padding:2rem;color:#94a3b8;font-weight:700;">Loading offers...</div>
+      </div>
+    </div>
+
+    <!-- PROFILE TAB -->
+    <div id="tab-profile" class="page">
+      <div class="card" style="padding:1.25rem;margin-bottom:1rem;">
+        <div style="font-weight:900;font-size:1.05rem;color:#0f172a;margin-bottom:1.25rem;">⚙️ Shop Profile</div>
+        <div class="field"><label>Shop Name</label><input id="profName" type="text"/></div>
+        <div class="field"><label>Owner Name</label><input id="profOwner" type="text"/></div>
+        <div class="field"><label>Phone</label><input id="profPhone" type="tel"/></div>
+        <div class="field"><label>Location</label><input id="profLocation" type="text"/></div>
+        <div class="field"><label>Description</label><textarea id="profDesc" rows="3" placeholder="Tell customers about your shop..."></textarea></div>
+        <button onclick="saveProfile()" id="saveProfileBtn" class="btn-green">Save Changes 💾</button>
+        <div id="profileMsg" style="display:none;margin-top:0.75rem;padding:0.75rem;border-radius:0.875rem;font-size:0.8rem;font-weight:700;text-align:center;"></div>
+      </div>
+
+      <div class="card" style="padding:1.25rem;">
+        <div style="font-weight:900;color:#0f172a;margin-bottom:0.5rem;">🔑 Account</div>
+        <div id="profileEmail" style="font-size:0.8rem;color:#64748b;font-weight:700;margin-bottom:1rem;"></div>
+        <button onclick="doLogout()" style="width:100%;padding:0.75rem;border-radius:1rem;border:2px solid #fecaca;background:#fff;color:#ef4444;font-weight:900;font-size:0.875rem;cursor:pointer;">Sign Out</button>
+      </div>
+    </div>
+
+  </div><!-- /padding -->
+</div><!-- /shopApp -->
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, addDoc, getDoc, setDoc, updateDoc, deleteDoc, query, where, onSnapshot, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAXeKNB777fNBK2zHqY6hGrvEfc0DH4VJs",
+  authDomain: "aralaganwila-offers.firebaseapp.com",
+  projectId: "aralaganwila-offers",
+  storageBucket: "aralaganwila-offers.firebasestorage.app",
+  messagingSenderId: "465514956115",
+  appId: "1:465514956115:web:53ce2f4ebfd4f7d1fc8da6"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const auth = getAuth(app);
+const GP  = new GoogleAuthProvider();
+
+const $ = id => document.getElementById(id);
+
+// ── TOAST ─────────────────────────────────────────────
+function toast(msg, type='success') {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.style.background = type === 'success' ? '#16a34a' : type === 'error' ? '#ef4444' : '#f59e0b';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ── TAB SWITCHING ──────────────────────────────────────
+window.switchTab = (tab, btn) => {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const el = $('tab-' + tab);
+  if (el) el.classList.add('active');
+  if (btn) btn.classList.add('active');
+};
+
+// ── AUTH ───────────────────────────────────────────────
+window.doGoogleLogin = async () => {
+  try {
+    $('googleBtnTxt').textContent = 'Signing in...';
+    $('googleSignInBtn').disabled = true;
+    await signInWithPopup(auth, GP);
+  } catch (e) {
+    toast('Sign in failed: ' + e.message, 'error');
+    $('googleBtnTxt').textContent = 'Sign in with Google';
+    $('googleSignInBtn').disabled = false;
+  }
+};
+
+window.doLogout = () => signOut(auth);
+
+// ── STATE ──────────────────────────────────────────────
+let currentUser = null;
+let currentShop = null;
+let offersUnsub = null;
+let authResolved = false;
+
+// Safety fallback: if Firebase auth takes >5s, show login screen anyway
+setTimeout(() => {
+  if (!authResolved) {
+    $('loadingScreen').style.display = 'none';
+    $('loginScreen').style.display = 'block';
+  }
+}, 5000);
+
+// ── AUTH STATE ─────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  authResolved = true;
+  $('loadingScreen').style.display = 'none';
+
+  if (!user) {
+    currentUser = null;
+    currentShop = null;
+    if (offersUnsub) { offersUnsub(); offersUnsub = null; }
+    $('shopApp').style.display = 'none';
+    $('loginScreen').style.display = 'block';
+    $('registerSection').style.display = 'none';
+    $('cancelRegBtn').style.display = 'none';
+    $('googleSignInBtn').disabled = false;
+    $('googleBtnTxt').textContent = 'Sign in with Google';
+    $('loginNote').textContent = '⚠️ Sign in with Google first to continue';
+    return;
+  }
+
+  currentUser = user;
+
+  // Check if shop exists for this user
+  const shopSnap = await getDoc(doc(db, 'shops', user.uid));
+
+  if (!shopSnap.exists()) {
+    // New user - show registration
+    $('loginScreen').style.display = 'block';
+    $('shopApp').style.display = 'none';
+    $('registerSection').style.display = 'block';
+    $('cancelRegBtn').style.display = 'block';
+    $('loginNote').innerHTML = `✅ Signed in as <b>${user.displayName}</b>. Register your shop below.`;
+    $('loginNote').style.background = '#f0fdf4';
+    $('loginNote').style.color = '#15803d';
+    $('loginNote').style.borderColor = '#bbf7d0';
+    // Pre-fill owner name
+    $('regOwner').value = user.displayName || '';
+    return;
+  }
+
+  // Shop exists - load app
+  currentShop = { id: user.uid, ...shopSnap.data() };
+  loadShopApp(user, currentShop);
+});
+
+// ── REGISTER SHOP ──────────────────────────────────────
+window.registerShop = async () => {
+  const name     = $('regName').value.trim();
+  const owner    = $('regOwner').value.trim();
+  const phone    = $('regPhone').value.trim();
+  const category = $('regCat').value;
+  const location = $('regLocation').value.trim();
+
+  if (!name || !owner || !phone || !category || !location) {
+    showMsg('regMsg', '⚠️ Please fill all required fields.', '#fffbeb', '#b45309', '#fde68a');
+    return;
+  }
+
+  const btn = $('regBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  try {
+    await setDoc(doc(db, 'shops', currentUser.uid), {
+      uid: currentUser.uid,
+      email: currentUser.email,
+      name, owner, phone, category, location,
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    });
+    showMsg('regMsg', '✅ Registration submitted! Waiting for admin approval.', '#f0fdf4', '#15803d', '#bbf7d0');
+    btn.textContent = 'Submitted ✓';
+  } catch (e) {
+    showMsg('regMsg', '❌ Error: ' + e.message, '#fef2f2', '#b91c1c', '#fecaca');
+    btn.disabled = false;
+    btn.textContent = 'Submit Registration 🏪';
+  }
+};
+
+// ── LOAD SHOP APP ──────────────────────────────────────
+function loadShopApp(user, shop) {
+  $('loginScreen').style.display = 'none';
+  $('shopApp').style.display = 'block';
+
+  // Header
+  $('shopNameHeader').textContent = shop.name || 'My Shop';
+  $('shopSubHeader').textContent = shop.category + ' · ' + (shop.location || '');
+  $('ownerAvatar').textContent = (shop.owner || user.displayName || 'U')[0].toUpperCase();
+
+  // Status banner
+  const banner = $('shopStatusBanner');
+  banner.style.display = 'block';
+  if (shop.status === 'approved') {
+    banner.style.background = '#f0fdf4';
+    banner.style.border = '1px solid #bbf7d0';
+    banner.style.color = '#15803d';
+    banner.innerHTML = '✅ <b>Shop Approved</b> — Your offers are visible to customers!';
+  } else if (shop.status === 'rejected') {
+    banner.style.background = '#fef2f2';
+    banner.style.border = '1px solid #fecaca';
+    banner.style.color = '#b91c1c';
+    banner.innerHTML = '❌ <b>Shop Rejected</b> — Contact admin for more info.';
+  } else {
+    banner.style.background = '#fffbeb';
+    banner.style.border = '1px solid #fde68a';
+    banner.style.color = '#b45309';
+    banner.innerHTML = '⏳ <b>Pending Approval</b> — Admin will review your shop soon.';
+  }
+
+  // Shop info
+  $('shopInfoContent').innerHTML = `
+    <div style="display:grid;gap:0.4rem;">
+      <div>📛 <b>Name:</b> ${shop.name}</div>
+      <div>👤 <b>Owner:</b> ${shop.owner}</div>
+      <div>📞 <b>Phone:</b> ${shop.phone}</div>
+      <div>🏷️ <b>Category:</b> ${shop.category}</div>
+      <div>📍 <b>Location:</b> ${shop.location}</div>
+      <div>📧 <b>Email:</b> ${user.email}</div>
+    </div>
+  `;
+
+  // Profile tab pre-fill
+  $('profName').value     = shop.name || '';
+  $('profOwner').value    = shop.owner || '';
+  $('profPhone').value    = shop.phone || '';
+  $('profLocation').value = shop.location || '';
+  $('profDesc').value     = shop.description || '';
+  $('profileEmail').textContent = '📧 ' + user.email;
+
+  // Load offers
+  loadMyOffers(user.uid, shop);
+}
+
+// ── LOAD MY OFFERS ─────────────────────────────────────
+function loadMyOffers(uid, shop) {
+  if (offersUnsub) offersUnsub();
+  const q = query(collection(db, 'offers'), where('shopId', '==', uid));
+  offersUnsub = onSnapshot(q, snap => {
+    const offers = [];
+    snap.forEach(d => offers.push({ id: d.id, ...d.data() }));
+    offers.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+    // Stats
+    $('statOffers').textContent = offers.length;
+    $('statActive').textContent = offers.filter(o => o.active !== false).length;
+
+    // Render list
+    renderMyOffers(offers, shop);
+  });
+}
+
+function renderMyOffers(offers, shop) {
+  const el = $('myOffersList');
+  if (!offers.length) {
+    el.innerHTML = '<div style="text-align:center;padding:2rem;color:#94a3b8;font-weight:700;">No offers yet. Add your first offer! 🎁</div>';
+    return;
+  }
+
+  el.innerHTML = offers.map(o => `
+    <div class="card" style="padding:1rem;margin-bottom:0.75rem;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;">
+        <div style="flex:1;">
+          <div style="font-weight:900;color:#0f172a;font-size:0.9rem;">${o.title}</div>
+          ${o.description ? `<div style="font-size:0.78rem;color:#64748b;font-weight:700;margin-top:0.25rem;">${o.description}</div>` : ''}
+          <div style="margin-top:0.5rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+            <span style="font-weight:900;color:#16a34a;font-size:1rem;">Rs. ${o.price}</span>
+            ${o.originalPrice ? `<span style="font-size:0.75rem;color:#94a3b8;font-weight:700;text-decoration:line-through;">Rs. ${o.originalPrice}</span>` : ''}
+            ${o.discount ? `<span class="badge" style="background:#fff7ed;color:#c2410c;border-color:#fed7aa;">${o.discount}% OFF</span>` : ''}
+          </div>
+          ${o.expiry ? `<div style="font-size:0.72rem;color:#94a3b8;font-weight:700;margin-top:0.3rem;">Expires: ${o.expiry}</div>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.4rem;">
+          <button onclick="toggleOfferActive('${o.id}', ${o.active !== false})"
+            style="padding:0.3rem 0.6rem;border-radius:0.625rem;border:1.5px solid ${o.active !== false ? '#bbf7d0' : '#e2e8f0'};background:${o.active !== false ? '#f0fdf4' : '#f8fafc'};color:${o.active !== false ? '#15803d' : '#94a3b8'};font-size:0.7rem;font-weight:800;cursor:pointer;">
+            ${o.active !== false ? '✅ Active' : '⏸ Paused'}
+          </button>
+          <button onclick="deleteMyOffer('${o.id}')"
+            style="padding:0.3rem 0.6rem;border-radius:0.625rem;border:1.5px solid #fecaca;background:#fff;color:#ef4444;font-size:0.7rem;font-weight:800;cursor:pointer;">
+            🗑 Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── ADD OFFER ──────────────────────────────────────────
+window.addOffer = async () => {
+  if (!currentShop) return;
+  if (currentShop.status !== 'approved') {
+    toast('⚠️ Your shop must be approved before posting offers.', 'warn');
+    return;
+  }
+
+  const title    = $('ofTitle').value.trim();
+  const desc     = $('ofDesc').value.trim();
+  const origPrice = parseFloat($('ofOrigPrice').value) || 0;
+  const price    = parseFloat($('ofPrice').value);
+  const discount = parseFloat($('ofDiscount').value) || 0;
+  const expiry   = $('ofExpiry').value;
+  const category = $('ofCat').value;
+
+  if (!title || !price || !category) {
+    showMsg('addOfferMsg', '⚠️ Title, Price and Category are required.', '#fffbeb', '#b45309', '#fde68a');
+    return;
+  }
+
+  const btn = $('addOfferBtn');
+  btn.disabled = true;
+  btn.textContent = 'Posting...';
+
+  try {
+    await addDoc(collection(db, 'offers'), {
+      title, description: desc,
+      price, originalPrice: origPrice || null,
+      discount: discount || null,
+      expiry: expiry || null,
+      category,
+      shopId: currentUser.uid,
+      shopName: currentShop.name,
+      shopLocation: currentShop.location,
+      active: true,
+      createdAt: new Date().toISOString()
+    });
+
+    toast('✅ Offer posted successfully!');
+    showMsg('addOfferMsg', '✅ Offer posted!', '#f0fdf4', '#15803d', '#bbf7d0');
+
+    // Reset form
+    ['ofTitle','ofDesc','ofOrigPrice','ofPrice','ofDiscount','ofExpiry'].forEach(id => $(id).value = '');
+    $('ofCat').value = '';
+
+    // Switch to offers tab
+    setTimeout(() => switchTab('offers', document.querySelectorAll('.tab-btn')[2]), 1000);
+
+  } catch (e) {
+    showMsg('addOfferMsg', '❌ Error: ' + e.message, '#fef2f2', '#b91c1c', '#fecaca');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Post Offer 🎉';
+  }
+};
+
+// ── AUTO-CALC DISCOUNT ─────────────────────────────────
+$('ofOrigPrice').addEventListener('input', calcDiscount);
+$('ofPrice').addEventListener('input', calcDiscount);
+function calcDiscount() {
+  const orig = parseFloat($('ofOrigPrice').value);
+  const sale = parseFloat($('ofPrice').value);
+  if (orig > 0 && sale > 0 && sale < orig) {
+    $('ofDiscount').value = Math.round(((orig - sale) / orig) * 100);
+  } else {
+    $('ofDiscount').value = '';
+  }
+}
+
+// ── TOGGLE OFFER ACTIVE ────────────────────────────────
+window.toggleOfferActive = async (offerId, currentActive) => {
+  try {
+    await updateDoc(doc(db, 'offers', offerId), { active: !currentActive });
+    toast(currentActive ? '⏸ Offer paused' : '✅ Offer activated');
+  } catch (e) {
+    toast('Error: ' + e.message, 'error');
+  }
+};
+
+// ── DELETE OFFER ───────────────────────────────────────
+window.deleteMyOffer = async (offerId) => {
+  if (!confirm('Delete this offer?')) return;
+  try {
+    await deleteDoc(doc(db, 'offers', offerId));
+    toast('🗑 Offer deleted');
+  } catch (e) {
+    toast('Error: ' + e.message, 'error');
+  }
+};
+
+// ── SAVE PROFILE ───────────────────────────────────────
+window.saveProfile = async () => {
+  if (!currentUser) return;
+  const name     = $('profName').value.trim();
+  const owner    = $('profOwner').value.trim();
+  const phone    = $('profPhone').value.trim();
+  const location = $('profLocation').value.trim();
+  const description = $('profDesc').value.trim();
+
+  if (!name || !owner || !phone || !location) {
+    showMsg('profileMsg', '⚠️ Please fill all required fields.', '#fffbeb', '#b45309', '#fde68a');
+    return;
+  }
+
+  const btn = $('saveProfileBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    await updateDoc(doc(db, 'shops', currentUser.uid), { name, owner, phone, location, description, updatedAt: new Date().toISOString() });
+    currentShop = { ...currentShop, name, owner, phone, location, description };
+    $('shopNameHeader').textContent = name;
+    $('shopSubHeader').textContent = currentShop.category + ' · ' + location;
+    showMsg('profileMsg', '✅ Profile updated!', '#f0fdf4', '#15803d', '#bbf7d0');
+    toast('✅ Profile saved!');
+  } catch (e) {
+    showMsg('profileMsg', '❌ Error: ' + e.message, '#fef2f2', '#b91c1c', '#fecaca');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Changes 💾';
+  }
+};
+
+// ── HELPER ─────────────────────────────────────────────
+function showMsg(id, text, bg, color, border) {
+  const el = $(id);
+  el.style.display = 'block';
+  el.style.background = bg;
+  el.style.color = color;
+  el.style.border = '1px solid ' + border;
+  el.textContent = text;
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+</script>
+</body>
+</html>

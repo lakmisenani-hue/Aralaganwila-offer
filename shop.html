@@ -226,11 +226,9 @@ onAuthStateChanged(auth, user => {
         
         try {
             const nameStr = user.displayName || 'User';
-            // BUG 1 FIXED: Properly getting initials
             const init = nameStr.split(' ').map(n=>n?n:'').join('').slice(0,2).toUpperCase();
             $('ownerAvatar').textContent=init;
             
-            // BUG 2 FIXED: Using docs correctly
             myShop = {id: snap.docs.id, ...snap.docs.data()};
             updateShopUI();
             
@@ -330,7 +328,6 @@ window.submitOffer = async () => {
   try {
     if (fileInput && fileInput.files.length > 0) {
       btn.textContent='Uploading Photo... ⏳';
-      // BUG 3 FIXED: Added to get the file correctly
       const file = fileInput.files;
       const storageRef = ref(storage, 'offers/' + Date.now() + '_' + file.name);
       await uploadBytes(storageRef, file);
@@ -351,7 +348,6 @@ window.submitOffer = async () => {
     if(fileInput) fileInput.value = '';
     $('offCat').value=''; $('savingsPreview').style.display='none';
     toast('✅ Offer submitted! Admin will review soon.');
-    // BUG 4 FIXED: Correctly switching tabs
     switchTab('myoffers', document.querySelectorAll('.tab-btn'));
   } catch(e) {
     toast('Error: '+e.message,'error');

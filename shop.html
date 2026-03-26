@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>My Shop — Aralaganwila Offers</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{font-family:'Nunito',sans-serif;box-sizing:border-box;}
+body{background:#f0fdf4;margin:0;max-width:480px;margin:0 auto;min-height:100vh;}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin 1s linear infinite}
+.card{background:#fff;border-radius:1.25rem;border:1px solid #e2e8f0;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+.page{display:none}.page.active{display:block;animation:slideUp 0.3s ease}
+.tab-btn{flex:1;padding:0.65rem;border:none;background:none;cursor:pointer;font-weight:800;font-size:0.8rem;color:rgba(255,255,255,0.65);border-radius:0.75rem;transition:all 0.2s;}
+.tab-btn.active{background:rgba(255,255,255,0.25);color:#fff;}
+.field{display:flex;flex-direction:column;gap:0.35rem;margin-bottom:0.875rem;}
+.field label{font-size:0.78rem;font-weight:800;color:#64748b;}
+.field input,.field select,.field textarea{padding:0.7rem 0.875rem;border:1.5px solid #e2e8f0;border-radius:0.875rem;font-size:0.875rem;font-weight:600;color:#374151;outline:none;transition:border 0.2s;font-family:inherit;width:100%;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#4ade80;}
+.btn-green{width:100%;padding:0.875rem;border-radius:1rem;background:linear-gradient(135deg,#16a34a,#059669);color:#fff;font-weight:900;font-size:0.95rem;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(22,163,74,0.3);}
+.btn-green:disabled{opacity:0.6;cursor:not-allowed;}
+.badge{display:inline-flex;align-items:center;gap:0.3rem;padding:0.22rem 0.65rem;border-radius:9999px;font-size:0.7rem;font-weight:800;border-width:1px;border-style:solid;}
+.badge-approved{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
+.badge-pending{background:#fffbeb;color:#b45309;border-color:#fde68a}
+.badge-rejected{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:999;padding:0.75rem 1.5rem;border-radius:1rem;color:#fff;font-weight:800;font-size:0.875rem;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,0.15);}
+</style>
+</head>
+<body>
+
+<div id="loadingScreen" style="position:fixed;inset:0;background:#fff;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
+  <div style="width:52px;height:52px;border-radius:1rem;background:linear-gradient(135deg,#16a34a,#059669);display:flex;align-items:center;justify-content:center;">
+    <svg width="24" height="24" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  </div>
+  <div style="font-weight:900;color:#0f172a;">Loading your shop...</div>
+  <svg class="spin" width="22" height="22" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+</div>
+
+<div id="loginScreen" style="display:none;min-height:100vh;background:linear-gradient(160deg,#f0fdf4,#dcfce7);padding:2rem 1.25rem;">
+  <div style="text-align:center;padding-top:3rem;margin-bottom:2.5rem;">
+    <div style="width:68px;height:68px;border-radius:1.5rem;background:linear-gradient(135deg,#16a34a,#059669);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;box-shadow:0 8px 24px rgba(22,163,74,0.35);">
+      <svg width="30" height="30" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div>
+    <div style="font-weight:900;font-size:1.6rem;color:#0f172a;">Shop Owner Portal</div>
+    <div style="font-size:0.875rem;color:#64748b;font-weight:700;margin-top:0.35rem;">Aralaganwila Offers</div>
+  </div>
+
+  <div class="card" style="padding:1.75rem;">
+    <div style="font-weight:900;font-size:1.1rem;color:#0f172a;margin-bottom:0.35rem;">Welcome 👋</div>
+    <div style="font-size:0.8rem;color:#94a3b8;font-weight:700;margin-bottom:1.5rem;">Sign in to register or manage your shop</div>
+    <button id="googleSignInBtn" onclick="doGoogleLogin()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:0.75rem;padding:0.875rem;border-radius:1rem;border:2px solid #e2e8f0;background:#fff;font-weight:900;color:#374151;font-size:0.9rem;cursor:pointer;">
+      <svg width="20" height="20" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      <span id="googleBtnTxt">Sign in with Google</span>
+    </button>
+  </div>
+</div>
+
+<div id="regScreen" style="display:none;min-height:100vh;padding:2rem 1.25rem;">
+  <div class="card" style="padding:1.75rem;">
+    <div style="font-weight:900;font-size:1.2rem;color:#0f172a;margin-bottom:1rem;">📋 Register Your Shop</div>
+    <div class="field"><label>Shop Name *</label><input id="regName" type="text" placeholder="e.g. Singhe Stores"/></div>
+    <div class="field"><label>Owner Name *</label><input id="regOwner" type="text" placeholder="Your full name"/></div>
+    <div class="field"><label>Phone *</label><input id="regPhone" type="tel" placeholder="077-XXXXXXX"/></div>
+    <div class="field"><label>Category *</label>
+      <select id="regCat">
+        <option value="">Select category</option>
+        <option>Grocery</option><option>Pharmacy</option><option>Hardware</option><option>Food</option><option>Fashion</option>
+      </select>
+    </div>
+    <div class="field"><label>Location *</label><input id="regLocation" type="text" placeholder="e.g. Town Center, Aralaganwila"/></div>
+    <button onclick="registerShop()" id="regBtn" class="btn-green" style="margin-top:0.5rem;">Register My Shop 🏪</button>
+  </div>
+  <div style="text-align:center;margin-top:1.5rem;">
+    <button onclick="doLogout()" style="background:none;border:none;color:#ef4444;font-weight:800;font-size:0.9rem;cursor:pointer;">Cancel & Sign Out</button>
+  </div>
+</div>
+
+<div id="shopApp" style="display:none;">
+  <div style="background:linear-gradient(135deg,#16a34a,#059669);padding:1.25rem 1.25rem 0.5rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+      <div>
+        <div style="font-weight:900;font-size:1.1rem;color:#fff;" id="shopNameHeader">My Shop</div>
+        <div style="font-size:0.72rem;color:rgba(255,255,255,0.75);font-weight:700;" id="shopSubHeader">Loading...</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        <div id="ownerAvatar" style="width:36px;height:36px;border-radius:9999px;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:0.8rem;">?</div>
+        <button onclick="doLogout()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:0.75rem;font-weight:800;padding:0.4rem 0.75rem;border-radius:0.75rem;cursor:pointer;">Sign Out</button>
+      </div>
+    </div>
+    <div style="display:flex;background:rgba(0,0,0,0.15);border-radius:1rem;padding:0.3rem;gap:0.2rem;">
+      <button class="tab-btn active" onclick="switchTab('home',this)">🏠 Home</button>
+      <button class="tab-btn" onclick="switchTab('add',this)">➕ Add Offer</button>
+      <button class="tab-btn" onclick="switchTab('myoffers',this)">🏷️ My Offers</button>
+    </div>
+  </div>
+
+  <div id="tab-home" class="page active" style="padding:1.25rem;">
+    <div class="card" style="padding:1.25rem;margin-bottom:1rem;">
+      <div style="display:flex;align-items:center;gap:0.875rem;">
+        <div style="width:48px;height:48px;border-radius:1rem;background:#dcfce7;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🏪</div>
+        <div>
+          <div style="font-weight:900;color:#0f172a;" id="homeShopName">Your Shop</div>
+          <div id="shopApprovalBadge" style="margin-top:0.3rem;"></div>
+        </div>
+      </div>
+      <div id="pendingMsg" style="display:none;margin-top:1rem;padding:0.875rem;border-radius:0.875rem;background:#fffbeb;border:1px solid #fde68a;font-size:0.8rem;font-weight:700;color:#b45309;">
+        ⏳ Your shop is waiting for Admin approval. You'll be notified once approved!
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.875rem;margin-bottom:1rem;">
+      <div class="card" style="padding:1rem;text-align:center;">
+        <div style="font-size:1.75rem;font-weight:900;color:#16a34a;" id="myOfferCount">0</div>
+        <div style="font-size:0.75rem;font-weight:800;color:#64748b;">Active Offers</div>
+      </div>
+      <div class="card" style="padding:1rem;text-align:center;">
+        <div style="font-size:1.75rem;font-weight:900;color:#f59e0b;" id="myPendingCount">0</div>
+        <div style="font-size:0.75rem;font-weight:800;color:#64748b;">Pending Review</div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:1.25rem;">
+      <div style="font-weight:900;color:#0f172a;margin-bottom:0.75rem;">💡 Tips</div>
+      <div style="font-size:0.8rem;color:#64748b;font-weight:700;line-height:1.8;">
+        ✅ Add clear product photos<br>
+        ✅ Set competitive prices<br>
+        ✅ Admin approves before going live<br>
+        ✅ Customers WhatsApp share your offers
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-add" class="page" style="padding:1.25rem;">
+    <div class="card" style="padding:1.25rem;">
+      <div style="font-weight:900;font-size:1.1rem;color:#0f172a;margin-bottom:1.25rem;">➕ Add New Offer</div>
+
+      <div class="field"><label>Product Name *</label><input id="offProduct" type="text" placeholder="e.g. Raththi 400g Milk Powder"/></div>
+      <div class="field"><label>Category *</label>
+        <select id="offCat">
+          <option value="">Select category</option>
+          <option>Grocery</option><option>Pharmacy</option><option>Hardware</option><option>Food</option><option>Fashion</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+        <div class="field"><label>Original Price (Rs.) *</label><input id="offOriginal" type="number" placeholder="680"/></div>
+        <div class="field"><label>Discount Price (Rs.) *</label><input id="offDiscount" type="number" placeholder="590"/></div>
+      </div>
+
+      <div id="savingsPreview" style="display:none;padding:0.75rem;border-radius:0.875rem;background:#f0fdf4;border:1px solid #bbf7d0;margin-bottom:0.875rem;text-align:center;">
+        <span style="font-weight:900;color:#15803d;font-size:0.9rem;">🔥 Save Rs.<span id="saveAmt">0</span> · <span id="savePct">0</span>% OFF</span>
+      </div>
+
+      <div class="field"><label>Product Image URL (optional)</label><input id="offImage" type="url" placeholder="https://..."/></div>
+
+      <button class="btn-green" onclick="submitOffer()" id="addBtn">Submit for Admin Review 🚀</button>
+      <div style="font-size:0.72rem;color:#94a3b8;font-weight:700;text-align:center;margin-top:0.65rem;">Admin will review before going live</div>
+    </div>
+  </div>
+
+  <div id="tab-myoffers" class="page" style="padding:1.25rem;">
+    <div class="card">
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid #f1f5f9;font-weight:900;color:#0f172a;">My Offers</div>
+      <div id="myOffersList">
+        <div style="padding:2.5rem;text-align:center;color:#94a3b8;font-weight:800;">No offers yet! Add your first one 🏷️</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, where, doc, deleteDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAXeKNB777fNBK2zHqY6hGrvEfc0DH4VJs",
+  authDomain: "aralaganwila-offers.firebaseapp.com",
+  projectId: "aralaganwila-offers",
+  storageBucket: "aralaganwila-offers.firebasestorage.app",
+  messagingSenderId: "465514956115",
+  appId: "1:465514956115:web:53ce2f4ebfd4f7d1fc8da6"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const auth = getAuth(app);
+const GP  = new GoogleAuthProvider();
+const $   = id => document.getElementById(id);
+
+let currentUser=null, myShop=null, myOffers=[];
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg, type='success') {
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t=document.createElement('div'); t.className='toast';
+  t.style.background=type==='success'?'#16a34a':type==='error'?'#dc2626':'#f59e0b';
+  t.textContent=msg; document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 3000);
+}
+
+// ── AUTH ──────────────────────────────────────────────────────
+window.doGoogleLogin = async () => {
+  const btn=$('googleSignInBtn'), txt=$('googleBtnTxt');
+  btn.disabled=true; txt.textContent='Signing in...';
+  try { await signInWithPopup(auth, GP); }
+  catch(e) { btn.disabled=false; txt.textContent='Sign in with Google'; toast('Login failed: '+e.message,'error'); }
+};
+window.doLogout = () => signOut(auth);
+
+// ── AUTH STATE ─────────────────────────────────────────────────
+onAuthStateChanged(auth, user => {
+  $('loadingScreen').style.display='none';
+  currentUser = user;
+  
+  if(user) {
+    // Hide Login screen when user is logged in
+    $('loginScreen').style.display='none';
+    
+    const init=(user.displayName||'U').split(' ').map(n=>n).join('').slice(0,2).toUpperCase();
+    $('ownerAvatar').textContent=init;
+    
+    // Check if this user has a shop registered
+    onSnapshot(query(collection(db,'shops'), where('ownerUid','==',user.uid)), snap => {
+      if(!snap.empty) {
+        // ✅ USER HAS A SHOP: Show Shop App, hide Registration
+        $('regScreen').style.display='none';
+        $('shopApp').style.display='block';
+        
+        myShop = {id: snap.docs.id, ...snap.docs.data()};
+        updateShopUI();
+        
+        // Listen for this user's offers
+        onSnapshot(query(collection(db,'offers'), where('ownerUid','==',user.uid)), oSnap => {
+          myOffers = oSnap.docs.map(d=>({id:d.id,...d.data()}));
+          renderOffers();
+        });
+      } else {
+        // ❌ USER HAS NO SHOP: Show Registration Form, hide Shop App
+        myShop=null;
+        $('regScreen').style.display='block';
+        $('shopApp').style.display='none';
+      }
+    });
+  } else {
+    // ❌ USER IS LOGGED OUT: Show Login Screen, hide everything else
+    $('loginScreen').style.display='block';
+    $('regScreen').style.display='none';
+    $('shopApp').style.display='none';
+  }
+});
+
+function updateShopUI() {
+  if(!myShop) return;
+  $('shopNameHeader').textContent=myShop.name||'My Shop';
+  $('homeShopName').textContent=myShop.name||'My Shop';
+  $('shopSubHeader').textContent = myShop.status==='approved'?'● Active & Live':'⏳ Pending Approval';
+  
+  if(myShop.status==='approved') {
+    $('shopApprovalBadge').innerHTML='<span class="badge badge-approved">✅ Approved — Live</span>';
+    $('pendingMsg').style.display='none';
+  } else if(myShop.status==='rejected') {
+    $('shopApprovalBadge').innerHTML='<span class="badge badge-rejected">❌ Rejected — Contact Admin</span>';
+    $('pendingMsg').style.display='none';
+  } else {
+    $('shopApprovalBadge').innerHTML='<span class="badge badge-pending">⏳ Pending Approval</span>';
+    $('pendingMsg').style.display='block';
+  }
+}
+
+// ── REGISTER SHOP ──────────────────────────────────────────────
+window.registerShop = async () => {
+  if(!currentUser) { toast('Sign in first!','error'); return; }
+  const name=$('regName').value.trim();
+  const owner=$('regOwner').value.trim();
+  const phone=$('regPhone').value.trim();
+  const cat=$('regCat').value;
+  const loc=$('regLocation').value.trim();
+  if(!name||!owner||!phone||!cat||!loc) { toast('Please fill all fields!','error'); return; }
+
+  const btn=$('regBtn'); btn.disabled=true; btn.textContent='Registering...';
+  try {
+    await addDoc(collection(db,'shops'), {
+      name, ownerName:owner, phone,
+      category:cat, location:loc,
+      status:'pending', offerCount:0,
+      ownerUid:currentUser.uid,
+      ownerEmail:currentUser.email,
+      createdAt:serverTimestamp()
+    });
+    // Form disappears automatically via onSnapshot!
+    toast('✅ Shop registered! Waiting for Admin approval.');
+  } catch(e) {
+    btn.disabled=false; btn.textContent='Register My Shop 🏪';
+    toast('Error: '+e.message,'error');
+  }
+};
+
+// ── PRICE PREVIEW ──────────────────────────────────────────────
+['offOriginal','offDiscount'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => {
+    const orig=parseFloat($('offOriginal').value)||0;
+    const disc=parseFloat($('offDiscount').value)||0;
+    if(orig>0 && disc>0 && orig>disc) {
+      $('saveAmt').textContent=orig-disc;
+      $('savePct').textContent=Math.round(((orig-disc)/orig)*100);
+      $('savingsPreview').style.display='block';
+    } else {
+      $('savingsPreview').style.display='none';
+    }
+  });
+});
+
+// ── SUBMIT OFFER ───────────────────────────────────────────────
+window.submitOffer = async () => {
+  if(!myShop) { toast('No shop found!','error'); return; }
+  if(myShop.status!=='approved') { toast('⏳ Wait for shop approval first!','warning'); return; }
+
+  const product=$('offProduct').value.trim();
+  const cat=$('offCat').value;
+  const orig=parseFloat($('offOriginal').value)||0;
+  const disc=parseFloat($('offDiscount').value)||0;
+  const img=$('offImage').value.trim();
+
+  if(!product||!cat||!orig||!disc) { toast('Fill all required fields!','error'); return; }
+  if(disc>=orig) { toast('Discount must be less than original price!','error'); return; }
+
+  const btn=$('addBtn'); btn.disabled=true; btn.textContent='Submitting...';
+  try {
+    await addDoc(collection(db,'offers'), {
+      product, category:cat,
+      original:orig, discount:disc,
+      image:img||'',
+      shop:myShop.name,
+      shopId:myShop.id,
+      ownerUid:currentUser.uid,
+      status:'pending',
+      views:0,
+      createdAt:serverTimestamp()
+    });
+    ['offProduct','offOriginal','offDiscount','offImage'].forEach(id=>$(id).value='');
+    $('offCat').value='';
+    $('savingsPreview').style.display='none';
+    toast('✅ Offer submitted! Admin will review soon.');
+    switchTab('myoffers', document.querySelectorAll('.tab-btn'));
+  } catch(e) {
+    toast('Error: '+e.message,'error');
+  } finally {
+    btn.disabled=false; btn.textContent='Submit for Admin Review 🚀';
+  }
+};
+
+// ── DELETE OFFER ───────────────────────────────────────────────
+window.deleteOffer = async (id) => {
+  if(!confirm('Delete this offer permanently?')) return;
+  try {
+    await deleteDoc(doc(db,'offers',id));
+    toast('🗑️ Offer deleted!');
+  } catch(e) { toast('Error: '+e.message,'error'); }
+};
+
+// ── TAB SWITCH ─────────────────────────────────────────────────
+window.switchTab = (tab, btn) => {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  $('tab-'+tab).classList.add('active');
+  if(btn instanceof Element) btn.classList.add('active');
+};
+
+// ── RENDER MY OFFERS ───────────────────────────────────────────
+function renderOffers() {
+  $('myOfferCount').textContent=myOffers.filter(o=>o.status==='approved').length;
+  $('myPendingCount').textContent=myOffers.filter(o=>o.status==='pending').length;
+
+  if(!myOffers.length) {
+    $('myOffersList').innerHTML='<div style="padding:2.5rem;text-align:center;color:#94a3b8;font-weight:800;">No offers yet! Add your first one 🏷️</div>';
+    return;
+  }
+
+  $('myOffersList').innerHTML=[...myOffers].reverse().map(o=>{
+    const statusBadge = {
+      approved:'<span class="badge badge-approved">✅ Live</span>',
+      pending:'<span class="badge badge-pending">⏳ Under Review</span>',
+      rejected:'<span class="badge badge-rejected">❌ Rejected</span>'
+    }[o.status||'pending'] || '<span class="badge badge-pending">⏳ Pending</span>';
+    return `<div style="padding:1rem;border-bottom:1px solid #f1f5f9;display:flex;gap:0.875rem;align-items:start;">
+      ${o.image?`<img src="${o.image}" style="width:56px;height:56px;border-radius:0.75rem;object-fit:cover;flex-shrink:0;">`:`<div style="width:56px;height:56px;border-radius:0.75rem;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">🏷️</div>`}
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:900;color:#0f172a;font-size:0.9rem;">${o.product||''}</div>
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.3rem;">
+          <span style="font-size:0.78rem;color:#94a3b8;text-decoration:line-through;">Rs.${o.original||0}</span>
+          <span style="font-size:1rem;font-weight:900;color:#16a34a;">Rs.${o.discount||0}</span>
+          <span style="font-size:0.65rem;font-weight:900;background:#fee2e2;color:#b91c1c;padding:0.15rem 0.4rem;border-radius:9999px;">Save Rs.${(o.original||0)-(o.discount||0)}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:0.5rem;">
+          ${statusBadge}
+          ${o.status!=='approved'?`<button onclick="deleteOffer('${o.id}')" style="background:#fee2e2;color:#b91c1c;border:none;padding:0.3rem 0.65rem;border-radius:0.5rem;font-size:0.7rem;font-weight:800;cursor:pointer;">🗑️ Delete</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

@@ -40,6 +40,13 @@ td{padding:1rem 1.25rem;border-bottom:1px solid #f8fafc;vertical-align:middle;}
 tr:hover td{background:#fafafa}
 input:focus,select:focus{outline:none;border-color:#4ade80!important;}
 </style>
+<link rel="manifest" href="manifest-admin.json"/>
+<meta name="theme-color" content="#7c3aed"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="ARL Admin"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="icon" href="icon-192.png"/>
 </head>
 <body>
 
@@ -394,6 +401,14 @@ function renderAll() {
       <div style="font-size:0.75rem;color:#94a3b8;font-weight:800;overflow:hidden;text-overflow:ellipsis;">${u.email||u.type||'Customer'}</div></div>
     </div>`;
   }).join('') : '<div style="grid-column:1/-1;text-align:center;padding:3rem;font-weight:900;color:#94a3b8;font-size:1.1rem;">No users yet</div>';
+}
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').then(r=>console.log('SW registered')).catch(e=>console.log('SW error',e));
+  });
 }
 </script>
 </body>

@@ -25,17 +25,14 @@ body{background:#f8fafc;margin:0;max-width:430px;margin:0 auto;min-height:100vh;
 .empty-state{text-align:center;padding:3rem 1rem;}
 .fav-btn{position:absolute;bottom:0.5rem;right:0.5rem;background:rgba(255,255,255,0.9);border:none;border-radius:9999px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;box-shadow:0 2px 6px rgba(0,0,0,0.15);}
 input:focus{outline:none;border-color:#4ade80!important;}
-.offer-card{cursor:pointer;}
-.offer-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.1);}
-
-/* Modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s;}
-.modal-overlay.open{opacity:1;pointer-events:all;}
-.modal-sheet{background:#fff;border-radius:1.5rem 1.5rem 0 0;width:100%;max-width:430px;max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);}
-.modal-overlay.open .modal-sheet{transform:translateY(0);}
-.call-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.8rem;border-radius:0.875rem;background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;font-size:0.85rem;font-weight:900;border:none;cursor:pointer;}
-.wa-btn2{width:100%;display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.8rem;border-radius:0.875rem;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:0.85rem;font-weight:900;border:none;cursor:pointer;}
 </style>
+<link rel="manifest" href="manifest-customer.json"/>
+<meta name="theme-color" content="#16a34a"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="ARL Offers"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="icon" href="icon-192.png"/>
 </head>
 <body>
 
@@ -93,16 +90,6 @@ input:focus{outline:none;border-color:#4ade80!important;}
   <div class="nav-item active" onclick="setNav('home',this)"><span>🏠</span><span>Home</span></div>
   <div class="nav-item" onclick="setNav('favorites',this)"><span>⭐</span><span>Favorites</span></div>
   <div class="nav-item" onclick="setNav('shops',this)"><span>🗺️</span><span>Shops</span></div>
-</div>
-
-<!-- Offer Detail Modal -->
-<div class="modal-overlay" id="offerModal" onclick="closeModal(event)">
-  <div class="modal-sheet" id="offerSheet">
-    <div style="display:flex;justify-content:center;padding:0.75rem 0 0;">
-      <div style="width:40px;height:4px;border-radius:9999px;background:#e2e8f0;"></div>
-    </div>
-    <div id="offerModalContent" style="padding:1.25rem 1.25rem 2rem;"></div>
-  </div>
 </div>
 
 <script type="module">
@@ -211,12 +198,12 @@ function render() {
     const orig=o.original||o.originalPrice||0, disc=o.discount||o.discountPrice||0;
     const pct=orig?Math.round(((orig-disc)/orig)*100):0;
     const isFav = favorites.includes(o.id);
-    return `<div class="offer-card" onclick="openOfferModal('${o.id}')">
+    return `<div class="offer-card">
       <div style="position:relative;">
         ${o.image?`<img src="${o.image}" style="width:100%;height:140px;object-fit:cover;">`:`<div style="height:140px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:3rem;">🏷️</div>`}
         ${pct?`<div style="position:absolute;top:0.5rem;right:0.5rem;background:linear-gradient(135deg,#16a34a,#059669);color:#fff;font-size:0.75rem;font-weight:900;padding:0.25rem 0.6rem;border-radius:9999px;box-shadow:0 4px 12px rgba(22,163,74,0.4);">-${pct}%</div>`:''}
         <div style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(0,0,0,0.6);color:#fff;font-size:0.65rem;font-weight:800;padding:0.2rem 0.5rem;border-radius:9999px;">${o.category||'Other'}</div>
-        <button class="fav-btn" onclick="event.stopPropagation();toggleFav('${o.id}',this)">${isFav?'❤️':'🤍'}</button>
+        <button class="fav-btn" onclick="toggleFav('${o.id}',this)">${isFav?'❤️':'🤍'}</button>
       </div>
       <div style="padding:0.875rem;">
         <div style="font-weight:900;color:#0f172a;font-size:0.9rem;line-height:1.2;min-height:2.4em;">${pName}</div>
@@ -225,10 +212,10 @@ function render() {
           <div style="font-size:1.15rem;font-weight:900;color:#16a34a;">Rs.${disc}</div>
           <div style="font-size:0.75rem;color:#94a3b8;text-decoration:line-through;font-weight:700;">Rs.${orig}</div>
         </div>
-        <div style="margin-top:0.6rem;display:flex;gap:0.4rem;">
-          <div style="flex:1;text-align:center;padding:0.45rem;border-radius:0.6rem;background:#e0f2fe;color:#0369a1;font-size:0.72rem;font-weight:900;">📞 Call</div>
-          <div style="flex:1;text-align:center;padding:0.45rem;border-radius:0.6rem;background:#dcfce7;color:#15803d;font-size:0.72rem;font-weight:900;">💬 WhatsApp</div>
-        </div>
+        <button class="whatsapp-btn" onclick="shareWhatsApp('${o.id}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+          Share Deal
+        </button>
       </div>
     </div>`;
   }).join('');
@@ -255,90 +242,14 @@ window.shareWhatsApp = (id) => {
   const msg=encodeURIComponent(`🔥 Aralaganwila Offer!\n\n*${pName}*\n📍 ${sName}\n💰 Only Rs. ${disc2}/- (Was Rs. ${orig2}/-)\n\nDon't miss it! 🛒`);
   window.open(`https://api.whatsapp.com/send?text=${msg}`,'_blank');
 };
+</script>
 
-// ── Offer Detail Modal ──
-window.openOfferModal = (id) => {
-  const o = allOffers.find(x=>x.id===id); if(!o) return;
-  try { updateDoc(doc(db,'offers',id),{views:increment(1)}); } catch(e){}
-
-  // Find matching shop
-  const shop = allShops.find(s =>
-    (s.name||'').toLowerCase() === (o.shopName||o.shop||'').toLowerCase()
-  );
-  const phone   = shop?.phone || o.phone || '';
-  const shopName= o.shopName||o.shop||'Shop';
-  const location= shop?.location || o.location || 'Aralaganwila';
-  const pName   = o.productName||o.product||'Offer';
-  const orig    = o.original||o.originalPrice||0;
-  const disc    = o.discount||o.discountPrice||0;
-  const pct     = orig ? Math.round(((orig-disc)/orig)*100) : 0;
-  const isFav   = favorites.includes(id);
-  const waPhone = phone.replace(/[^0-9]/g,'').replace(/^0/,'94');
-
-  $('offerModalContent').innerHTML = `
-    <!-- Image -->
-    <div style="position:relative;border-radius:1.25rem;overflow:hidden;margin-bottom:1rem;">
-      ${o.image
-        ? `<img src="${o.image}" style="width:100%;height:200px;object-fit:cover;">`
-        : `<div style="height:180px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:4rem;border-radius:1.25rem;">🏷️</div>`}
-      ${pct ? `<div style="position:absolute;top:0.75rem;left:0.75rem;background:linear-gradient(135deg,#16a34a,#059669);color:#fff;font-size:0.85rem;font-weight:900;padding:0.35rem 0.8rem;border-radius:9999px;">-${pct}% OFF</div>` : ''}
-      <button onclick="toggleFavModal('${id}',this)" style="position:absolute;top:0.75rem;right:0.75rem;background:rgba(255,255,255,0.95);border:none;border-radius:9999px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;box-shadow:0 2px 8px rgba(0,0,0,0.15);">${isFav?'❤️':'🤍'}</button>
-    </div>
-
-    <!-- Product info -->
-    <div style="margin-bottom:1rem;">
-      <span style="background:#dcfce7;color:#15803d;font-size:0.72rem;font-weight:900;padding:0.2rem 0.7rem;border-radius:9999px;">${o.category||'Other'}</span>
-      <div style="font-size:1.25rem;font-weight:900;color:#0f172a;margin-top:0.6rem;line-height:1.25;">${pName}</div>
-      <div style="display:flex;align-items:baseline;gap:0.5rem;margin-top:0.5rem;">
-        <span style="font-size:1.75rem;font-weight:900;color:#16a34a;">Rs. ${disc.toLocaleString()}</span>
-        ${orig ? `<span style="font-size:1rem;color:#94a3b8;text-decoration:line-through;font-weight:700;">Rs. ${orig.toLocaleString()}</span>` : ''}
-      </div>
-      ${o.description ? `<div style="font-size:0.85rem;color:#64748b;margin-top:0.75rem;line-height:1.5;font-weight:600;">${o.description}</div>` : ''}
-    </div>
-
-    <!-- Divider -->
-    <div style="height:1px;background:#f1f5f9;margin-bottom:1rem;"></div>
-
-    <!-- Shop details -->
-    <div style="background:#f8fafc;border-radius:1rem;padding:1rem;margin-bottom:1.25rem;border:1.5px solid #e2e8f0;">
-      <div style="font-size:0.72rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;">🏪 Shop Details</div>
-      <div style="font-size:1rem;font-weight:900;color:#0f172a;margin-bottom:0.3rem;">${shopName}</div>
-      <div style="font-size:0.82rem;color:#64748b;font-weight:700;margin-bottom:0.25rem;">📍 ${location}</div>
-      ${phone ? `<div style="font-size:0.9rem;color:#16a34a;font-weight:900;">📞 ${phone}</div>` : ''}
-      ${shop?.category ? `<div style="margin-top:0.5rem;"><span style="background:#e0f2fe;color:#0369a1;font-size:0.7rem;font-weight:900;padding:0.2rem 0.6rem;border-radius:9999px;">${shop.category}</span></div>` : ''}
-    </div>
-
-    <!-- Action buttons -->
-    <div style="display:flex;flex-direction:column;gap:0.6rem;">
-      ${phone ? `
-      <button class="call-btn" onclick="window.open('tel:${phone}','_self')">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.93 19.79 19.79 0 01.25 1.35 2 2 0 012.24 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.08 6.08l1.28-1.28a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-        Call Shop — ${phone}
-      </button>
-      <button class="wa-btn2" onclick="window.open('https://wa.me/${waPhone}?text=${encodeURIComponent('Hi! I saw your offer for *'+pName+'* (Rs.'+disc+') on Aralaganwila Offers app. Is it still available?')}','_blank')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-        WhatsApp Shop
-      </button>` : ''}
-      <button class="wa-btn2" style="background:linear-gradient(135deg,#f59e0b,#d97706);" onclick="shareWhatsApp('${id}')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-        Share This Deal
-      </button>
-    </div>
-  `;
-  $('offerModal').classList.add('open');
-};
-
-window.closeModal = (e) => {
-  if(e.target === $('offerModal')) $('offerModal').classList.remove('open');
-};
-
-window.toggleFavModal = (id, btn) => {
-  const idx = favorites.indexOf(id);
-  if(idx > -1) { favorites.splice(idx,1); btn.textContent='🤍'; }
-  else { favorites.push(id); btn.textContent='❤️'; }
-  localStorage.setItem('ao_favs', JSON.stringify(favorites));
-  if(currentTab === 'favorites') { $('offerModal').classList.remove('open'); render(); }
-};
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').then(r=>console.log('SW registered')).catch(e=>console.log('SW error',e));
+  });
+}
 </script>
 </body>
 </html>
